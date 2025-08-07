@@ -28,6 +28,7 @@ export interface TranscriptionResponse {
   error_message?: string;
   metadata?: MeetingMetadata;
   summary?: string;
+  meeting_minutes?: string;
 }
 
 export interface UploadResponse {
@@ -131,4 +132,14 @@ export interface Statistics {
   total_transcriptions: number;
   storage_used: string;
   last_update: string;
+}
+
+export interface MeetingMinutesResponse {
+  success: boolean;
+  meeting_minutes?: string;
+  transcription_id?: string;
+  workflow_run_id?: string;
+  task_id?: string;
+  message: string;
+  error?: string;
 }

@@ -23,7 +23,14 @@ Um frontend moderno e elegante em React para interagir com a API de transcriçã
 - Formulário de metadados da reunião
 - Progress bar e feedback visual
 
-### 🔍 Busca Semântica
+### � Geração de Atas (NOVO)
+- Geração automática de atas de reunião
+- Interface intuitiva com botão dedicado
+- Visualização formatada das atas
+- Integração com workflows do Dify.ai
+- Armazenamento e histórico de atas
+
+### �🔍 Busca Semântica
 - Busca inteligente em transcrições
 - Interface intuitiva
 - Resultados com relevância
@@ -38,6 +45,7 @@ Um frontend moderno e elegante em React para interagir com a API de transcriçã
 - Lista de transcrições
 - Visualização de detalhes
 - Ações de gerenciamento
+- Status de processamento em tempo real
 
 ## 🛠 Instalação e Execução
 
@@ -108,11 +116,11 @@ src/
 ├── components/           # Componentes React
 │   ├── ui/              # Componentes base (shadcn/ui)
 │   ├── FileUpload.tsx   # Componente de upload
-│   └── MainDashboard.tsx # Dashboard principal
+│   └── MainDashboard.tsx # Dashboard principal + Atas
 ├── services/            # Serviços e APIs
-│   └── api.ts          # Cliente da API
+│   └── api.ts          # Cliente da API (+ endpoints de atas)
 ├── types/              # Tipos TypeScript
-│   └── api.ts         # Tipos da API
+│   └── api.ts         # Tipos da API (+ MeetingMinutesResponse)
 ├── lib/               # Utilitários
 │   └── utils.ts      # Funções auxiliares
 ├── App.tsx           # Componente principal
@@ -135,6 +143,13 @@ src/
 - Feedback visual do progresso
 - Suporte para metadados da reunião
 - Integração com diferentes datasets
+
+### 🆕 Geração de Atas
+- Botão "Gerar Ata" em transcrições completas
+- Interface de loading durante processamento
+- Visualização formatada das atas geradas
+- Armazenamento automático no sistema
+- Feedback visual de sucesso/erro
 
 ### Busca Avançada
 - Busca semântica com IA
@@ -163,8 +178,34 @@ src/
    - Limpar cache: `rm -rf node_modules package-lock.json && npm install`
    - Verificar versões do Node.js
 
+4. **Erro ao gerar ata:**
+   - Verificar se a transcrição está completa
+   - Confirmar configuração do workflow no backend
+   - Verificar logs do servidor para mais detalhes
+
+## 📋 Como Usar a Geração de Atas
+
+### Passo a Passo:
+
+1. **Fazer Upload**: Envie um arquivo de áudio e aguarde a transcrição ser processada
+2. **Aguardar Conclusão**: A transcrição deve ter status "Concluída"
+3. **Gerar Ata**: 
+   - Na lista de transcrições: clique no botão "Gerar Ata"
+   - Nos detalhes: clique no botão "📋 Gerar Ata de Reunião"
+4. **Visualizar**: A ata aparecerá automaticamente na seção dedicada
+
+### Funcionalidades da Interface:
+
+- **Loading State**: Indicador visual durante geração
+- **Feedback de Erro**: Mensagens claras em caso de problema
+- **Formatação**: Atas exibidas com formatação adequada
+- **Persistência**: Atas ficam salvas e disponíveis permanentemente
+
 ## 📝 Próximas Funcionalidades
 
+- [ ] Edição de atas geradas
+- [ ] Exportação de atas em PDF/Word
+- [ ] Templates personalizáveis para atas
 - [ ] Modo offline
 - [ ] PWA support
 - [ ] Notificações push

@@ -307,6 +307,8 @@ const TranscriptionsTab: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedTranscription, setSelectedTranscription] = useState<TranscriptionResponse | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [minutesLoading, setMinutesLoading] = useState(false);
+  const [minutesError, setMinutesError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTranscriptions = async () => {
@@ -379,6 +381,43 @@ const TranscriptionsTab: React.FC = () => {
     } catch (err) {
       console.error('Error deleting transcription:', err);
       setError('Erro ao excluir transcrição');
+    }
+  };
+
+  const handleGenerateMinutes = async (transcriptionId: string) => {
+    try {
+      setMinutesLoading(true);
+      setMinutesError(null);
+      
+      const response = await apiService.generateMeetingMinutes(transcriptionId);
+      
+      if (response.success) {
+        // Atualiza a transcrição selecionada com a ata gerada
+        if (selectedTranscription && selectedTranscription.id === transcriptionId) {
+          setSelectedTranscription({
+            ...selectedTranscription,
+            meeting_minutes: response.meeting_minutes
+          });
+        }
+        
+        // Atualiza a lista de transcrições
+        setTranscriptions(transcriptions.map(t => 
+          t.id === transcriptionId 
+            ? { ...t, meeting_minutes: response.meeting_minutes }
+            : t
+        ));
+        
+        alert('Ata de reunião gerada com sucesso!');
+      } else {
+        throw new Error(response.error || 'Erro ao gerar ata de reunião');
+      }
+    } catch (err) {
+      console.error('Error generating meeting minutes:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao gerar ata de reunião';
+      setMinutesError(errorMessage);
+      alert(`Erro: ${errorMessage}`);
+    } finally {
+      setMinutesLoading(false);
     }
   };
 
@@ -510,6 +549,15 @@ const TranscriptionsTab: React.FC = () => {
                         </p>
                       </div>
                     )}
+
+                    {/* Indicador de ata disponível */}
+                    {transcription.meeting_minutes && (
+                      <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-700 flex items-center gap-1">
+                          📋 <span className="font-medium">Ata de reunião disponível</span>
+                        </p>
+                      </div>
+                    )}
                     
                     <div className="flex justify-end mt-3 gap-2">
                       <Button 
@@ -520,6 +568,23 @@ const TranscriptionsTab: React.FC = () => {
                       >
                         {detailsLoading ? 'Carregando...' : 'Ver Detalhes'}
                       </Button>
+                      {transcription.status === 'completed' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className={transcription.meeting_minutes ? "text-green-600 hover:text-green-700" : "text-blue-600 hover:text-blue-700"}
+                          onClick={() => {
+                            if (transcription.meeting_minutes) {
+                              handleViewDetails(transcription.id);
+                            } else {
+                              handleGenerateMinutes(transcription.id);
+                            }
+                          }}
+                          disabled={minutesLoading}
+                        >
+                          {minutesLoading ? 'Gerando...' : (transcription.meeting_minutes ? 'Ver Ata' : 'Gerar Ata')}
+                        </Button>
+                      )}
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -708,6 +773,46 @@ const TranscriptionsTab: React.FC = () => {
                     </div>
                   </div>
                 )
+              )}
+
+              {/* Ata de Reunião */}
+              {selectedTranscription.meeting_minutes && (
+                <div>
+                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                    <span className="text-blue-600">📋</span>
+                    Ata de Reunião
+                  </h3>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-gray-900 whitespace-pre-wrap leading-relaxed">
+                      {selectedTranscription.meeting_minutes}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Botão para gerar ata se ainda não foi gerada */}
+              {selectedTranscription.status === 'completed' && !selectedTranscription.meeting_minutes && (
+                <div className="text-center">
+                  <Button 
+                    onClick={() => handleGenerateMinutes(selectedTranscription.id)}
+                    disabled={minutesLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {minutesLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Gerando Ata...
+                      </>
+                    ) : (
+                      <>
+                        📋 Gerar Ata de Reunião
+                      </>
+                    )}
+                  </Button>
+                  {minutesError && (
+                    <p className="text-red-600 text-sm mt-2">{minutesError}</p>
+                  )}
+                </div>
               )}
 
               {/* Mensagem de erro (se houver) */}

@@ -193,6 +193,20 @@ export const apiService = {
     const response = await api.get('/transcriptions', { params });
     return response.data;
   },
+
+  // Gerar ata de reunião
+  async generateMeetingMinutes(transcriptionId: string): Promise<{
+    success: boolean;
+    meeting_minutes?: string;
+    transcription_id?: string;
+    workflow_run_id?: string;
+    task_id?: string;
+    message: string;
+    error?: string;
+  }> {
+    const response = await api.post(`/transcriptions/${transcriptionId}/generate-minutes`);
+    return response.data;
+  },
 };
 
 export default apiService;
