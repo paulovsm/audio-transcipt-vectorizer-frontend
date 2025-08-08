@@ -830,7 +830,8 @@ const TranscriptionsTab: React.FC = () => {
   );
 };
 
-export const MainDashboard: React.FC = () => {
+interface MainDashboardProps { embedMode?: boolean }
+export const MainDashboard: React.FC<MainDashboardProps> = ({ embedMode = false }) => {
   const [activeTab, setActiveTab] = useState('upload');
 
   const renderTabContent = () => {
@@ -849,28 +850,30 @@ export const MainDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Mic className="h-8 w-8 text-primary mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Sistema de Transcrição de Reuniões
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Transcreva e analise suas reuniões com IA
-                </p>
+    <div className={embedMode ? '' : 'min-h-screen bg-gray-50'}>
+      {!embedMode && (
+        <header className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
+              <div className="flex items-center">
+                <Mic className="h-8 w-8 text-primary mr-3" />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Sistema de Transcrição de Reuniões
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    Transcreva e analise suas reuniões com IA
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={embedMode ? 'py-6' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'}>
         {renderTabContent()}
       </main>
     </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MainDashboard } from './components/MainDashboard';
+import { AppLayout } from '@/components/layout/AppLayout';
 import './index.css';
 
 // Criar uma instância do QueryClient
@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <MainDashboard />
+      <AppLayout />
     </QueryClientProvider>
   );
 }
