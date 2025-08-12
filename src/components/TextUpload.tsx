@@ -76,7 +76,7 @@ export const TextUpload: React.FC<TextUploadProps> = ({
         .filter(p => p.length > 0);
 
       const response = await apiService.uploadTextFile(file, {
-        meeting_title: meetingTitle || undefined,
+        meeting_id: meetingTitle || undefined,
         meeting_type: meetingType || undefined,
         participants: participantsList.length > 0 ? participantsList : undefined,
         language_code: languageCode,

@@ -24,6 +24,7 @@ const PPTUploadTab: React.FC = () => {
   const [languageCode,setLanguageCode]=useState('pt-BR');
   const [detailedAnalysis,setDetailedAnalysis]=useState(true);
   // Novos estados
+  const [meetingId,setMeetingId]=useState('');
   const [workstream,setWorkstream]=useState('');
   const [bpmlL1,setBpmlL1]=useState('');
   const [bpmlL2,setBpmlL2]=useState('');
@@ -39,7 +40,7 @@ const PPTUploadTab: React.FC = () => {
   const handleUpload = async ()=>{
     if(files.length===0) return; const file=files[0]; setState({status:'uploading',message:'Enviando arquivo...'});
     try {
-      const resp = await pptService.uploadPresentation(file,{ presentation_title: title||undefined, presentation_type: ptype||undefined, author: author||undefined, dataset_name: dataset||undefined, language_code: languageCode, detailed_analysis: detailedAnalysis, workstream: workstream||undefined, bpml_l1: bpmlL1||undefined, bpml_l2: bpmlL2||undefined });
+      const resp = await pptService.uploadPresentation(file,{ presentation_title: title||undefined, presentation_type: ptype||undefined, author: author||undefined, dataset_name: dataset||undefined, language_code: languageCode, detailed_analysis: detailedAnalysis, meeting_id: meetingId||undefined, workstream: workstream||undefined, bpml_l1: bpmlL1||undefined, bpml_l2: bpmlL2||undefined });
       setState({status:'success',message:`Upload iniciado. ID: ${resp.file_id}`});
       setTimeout(()=>{ setFiles([]); setTitle(''); setPtype(''); setAuthor(''); setDataset(''); setWorkstream(''); setBpmlL1(''); setBpmlL2(''); setDetailedAnalysis(true); setLanguageCode('pt-BR'); setState({status:'idle',message:''}); },2500);
     } catch (e) {
@@ -90,6 +91,7 @@ const PPTUploadTab: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2"><label className="text-sm font-medium">Título</label><Input placeholder="Título da apresentação" value={title} onChange={e=>setTitle(e.target.value)} /></div>
+          <div className="space-y-2"><label className="text-sm font-medium">Identificador da Reunião</label><Input placeholder="Ex: Sprint-Planning-2024-08" value={meetingId} onChange={e=>setMeetingId(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Tipo</label><Input placeholder="Ex: comercial, técnico" value={ptype} onChange={e=>setPtype(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Autor</label><Input placeholder="Nome do autor" value={author} onChange={e=>setAuthor(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Workstream</label><Input placeholder="Ex: Technology, Product, Operations" value={workstream} onChange={e=>setWorkstream(e.target.value)} /></div>

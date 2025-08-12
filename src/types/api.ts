@@ -1,6 +1,6 @@
 export interface TranscriptionRequest {
   file_name: string;
-  meeting_title?: string;
+  meeting_id?: string;
   meeting_date?: string;
   participants?: string[];
   meeting_type?: string;
@@ -88,7 +88,7 @@ export interface Dataset {
 }
 
 export interface MeetingMetadata {
-  meeting_title: string;
+  meeting_id: string;
   meeting_date: string;
   participants: string[];
   meeting_type: string;
@@ -106,7 +106,6 @@ export interface ProcessedTranscription {
   transcription_id: string;
   metadata: MeetingMetadata;
   summary: string;
-  embedding_ids: string[];
   processing_status: 'pending' | 'processing' | 'completed' | 'failed';
   processed_at?: string;
   error_message?: string;

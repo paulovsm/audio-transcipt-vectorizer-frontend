@@ -16,6 +16,7 @@ export const pptService = {
     detailed_analysis?: boolean; 
     dataset_name?: string;
     // Novos campos
+    meeting_id?: string;
     workstream?: string;
     bpml_l1?: string;
     bpml_l2?: string;
@@ -29,6 +30,7 @@ export const pptService = {
     form.append('detailed_analysis', String(options.detailed_analysis ?? true));
     if (options.dataset_name) form.append('dataset_name', options.dataset_name);
     // Novos campos
+    if (options.meeting_id) form.append('meeting_id', options.meeting_id);
     if (options.workstream) form.append('workstream', options.workstream);
     if (options.bpml_l1) form.append('bpml_l1', options.bpml_l1);
     if (options.bpml_l2) form.append('bpml_l2', options.bpml_l2);

@@ -307,6 +307,7 @@ const TranscriptionsTab: React.FC = () => {
   const [transcriptions, setTranscriptions] = useState<TranscriptionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedTranscriptionId, setExpandedTranscriptionId] = useState<string | null>(null);
   const [selectedTranscription, setSelectedTranscription] = useState<TranscriptionResponse | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [minutesLoading, setMinutesLoading] = useState(false);
@@ -331,14 +332,23 @@ const TranscriptionsTab: React.FC = () => {
   }, []);
 
   const handleViewDetails = async (transcriptionId: string) => {
+    // Se já está expandido, colapsa
+    if (expandedTranscriptionId === transcriptionId) {
+      setExpandedTranscriptionId(null);
+      setSelectedTranscription(null);
+      return;
+    }
+
     try {
       setDetailsLoading(true);
+      setExpandedTranscriptionId(transcriptionId);
       const fullTranscription = await apiService.getTranscription(transcriptionId);
       console.log('Full transcription data:', fullTranscription); // Debug log
       setSelectedTranscription(fullTranscription);
     } catch (err) {
       console.error('Error fetching transcription details:', err);
       setError('Erro ao carregar detalhes da transcrição');
+      setExpandedTranscriptionId(null);
     } finally {
       setDetailsLoading(false);
     }
@@ -525,309 +535,319 @@ const TranscriptionsTab: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {transcriptions.map((transcription) => (
-                <Card key={transcription.id} className="border-l-4 border-l-blue-500">
-                  <CardContent className="pt-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-lg mb-1">
-                          {transcription.file_name}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>ID: {transcription.id}</span>
-                          <span>Duração: {formatDuration(transcription.duration_seconds || 0)}</span>
-                          <span>Criado: {formatDate(transcription.created_at)}</span>
+                <div key={transcription.id}>
+                  <Card className="border-l-4 border-l-blue-500">
+                    <CardContent className="pt-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-medium text-lg mb-1">
+                            {transcription.file_name}
+                          </h3>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span>ID: {transcription.id}</span>
+                            <span>Duração: {formatDuration(transcription.duration_seconds || 0)}</span>
+                            <span>Criado: {formatDate(transcription.created_at)}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(transcription.status)}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {getStatusBadge(transcription.status)}
-                      </div>
-                    </div>
-                    
-                    {transcription.full_text && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-700 line-clamp-3">
-                          {transcription.full_text.substring(0, 200)}
-                          {transcription.full_text.length > 200 && '...'}
-                        </p>
-                      </div>
-                    )}
+                      
+                      {transcription.full_text && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-700 line-clamp-3">
+                            {transcription.full_text.substring(0, 200)}
+                            {transcription.full_text.length > 200 && '...'}
+                          </p>
+                        </div>
+                      )}
 
-                    {/* Indicador de ata disponível */}
-                    {transcription.meeting_minutes && (
-                      <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm text-blue-700 flex items-center gap-1">
-                          📋 <span className="font-medium">Ata de reunião disponível</span>
-                        </p>
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-end mt-3 gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewDetails(transcription.id)}
-                        disabled={detailsLoading}
-                      >
-                        {detailsLoading ? 'Carregando...' : 'Ver Detalhes'}
-                      </Button>
-                      {transcription.status === 'completed' && (
+                      {/* Indicador de ata disponível */}
+                      {transcription.meeting_minutes && (
+                        <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-700 flex items-center gap-1">
+                            📋 <span className="font-medium">Ata de reunião disponível</span>
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-end mt-3 gap-2">
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className={transcription.meeting_minutes ? "text-green-600 hover:text-green-700" : "text-blue-600 hover:text-blue-700"}
-                          onClick={() => {
-                            if (transcription.meeting_minutes) {
-                              handleViewDetails(transcription.id);
-                            } else {
-                              handleGenerateMinutes(transcription.id);
-                            }
-                          }}
-                          disabled={minutesLoading}
+                          onClick={() => handleViewDetails(transcription.id)}
+                          disabled={detailsLoading && expandedTranscriptionId === transcription.id}
                         >
-                          {minutesLoading ? 'Gerando...' : (transcription.meeting_minutes ? 'Ver Ata' : 'Gerar Ata')}
+                          {detailsLoading && expandedTranscriptionId === transcription.id 
+                            ? 'Carregando...' 
+                            : expandedTranscriptionId === transcription.id 
+                              ? 'Ocultar Detalhes' 
+                              : 'Ver Detalhes'
+                          }
                         </Button>
-                      )}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(transcription.id)}
-                      >
-                        Excluir
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                        {transcription.status === 'completed' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className={transcription.meeting_minutes ? "text-green-600 hover:text-green-700" : "text-blue-600 hover:text-blue-700"}
+                            onClick={() => {
+                              if (transcription.meeting_minutes) {
+                                handleViewDetails(transcription.id);
+                              } else {
+                                handleGenerateMinutes(transcription.id);
+                              }
+                            }}
+                            disabled={minutesLoading}
+                          >
+                            {minutesLoading ? 'Gerando...' : (transcription.meeting_minutes ? 'Ver Ata' : 'Gerar Ata')}
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDelete(transcription.id)}
+                        >
+                          Excluir
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Detalhes expandidos inline */}
+                  {expandedTranscriptionId === transcription.id && selectedTranscription && (
+                    <Card className="mt-2 ml-4 border-l-4 border-l-green-500">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="flex items-center gap-2">
+                              <FileText className="h-5 w-5" />
+                              Detalhes da Transcrição: {selectedTranscription.file_name}
+                            </CardTitle>
+                            <CardDescription>
+                              ID: {selectedTranscription.id}
+                            </CardDescription>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setExpandedTranscriptionId(null);
+                              setSelectedTranscription(null);
+                            }}
+                          >
+                            Fechar
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-6">
+                          {/* Informações básicas */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                              <span className="font-medium text-sm text-gray-600">Status:</span>
+                              <div className="mt-1">{getStatusBadge(selectedTranscription.status)}</div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-sm text-gray-600">Duração:</span>
+                              <p className="mt-1">{formatDuration(selectedTranscription.duration_seconds || 0)}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium text-sm text-gray-600">Criado em:</span>
+                              <p className="mt-1">{formatDate(selectedTranscription.created_at)}</p>
+                            </div>
+                            {selectedTranscription.completed_at && (
+                              <div>
+                                <span className="font-medium text-sm text-gray-600">Concluído em:</span>
+                                <p className="mt-1">{formatDate(selectedTranscription.completed_at)}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Resumo Executivo */}
+                          {selectedTranscription.summary && (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <FileText className="h-5 w-5" />
+                                Resumo Executivo
+                              </h3>
+                              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-gray-900 leading-relaxed">
+                                  {selectedTranscription.summary}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Ações Definidas */}
+                          {selectedTranscription.metadata?.action_items && selectedTranscription.metadata.action_items.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <span className="text-orange-600">📋</span>
+                                Ações Definidas
+                              </h3>
+                              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                                <ul className="space-y-2">
+                                  {selectedTranscription.metadata.action_items.map((item, index) => (
+                                    <li key={index} className="flex items-start gap-2">
+                                      <span className="text-orange-600 font-medium">{index + 1}.</span>
+                                      <span className="text-gray-900">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Decisões Tomadas */}
+                          {selectedTranscription.metadata?.decisions && selectedTranscription.metadata.decisions.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <span className="text-green-600">✅</span>
+                                Decisões Tomadas
+                              </h3>
+                              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <ul className="space-y-2">
+                                  {selectedTranscription.metadata.decisions.map((decision, index) => (
+                                    <li key={index} className="flex items-start gap-2">
+                                      <span className="text-green-600 font-medium">{index + 1}.</span>
+                                      <span className="text-gray-900">{decision}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Pontos-Chave */}
+                          {selectedTranscription.metadata?.key_points && selectedTranscription.metadata.key_points.length > 0 && (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <span className="text-purple-600">💡</span>
+                                Pontos-Chave
+                              </h3>
+                              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                <ul className="space-y-2">
+                                  {selectedTranscription.metadata.key_points.map((point, index) => (
+                                    <li key={index} className="flex items-start gap-2">
+                                      <span className="text-purple-600 font-medium">{index + 1}.</span>
+                                      <span className="text-gray-900">{point}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Transcrição com Speaker Diarization */}
+                          {selectedTranscription.metadata?.segments && selectedTranscription.metadata.segments.length > 0 ? (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <span className="text-blue-600">🎤</span>
+                                Transcrição com Identificação de Falantes
+                              </h3>
+                              <div className="p-4 bg-white border rounded-lg max-h-96 overflow-y-auto">
+                                <div className="space-y-4">
+                                  {selectedTranscription.metadata.segments.map((segment, index) => {
+                                    const startTimeFormatted = formatTimestamp(segment.start_time);
+                                    const speakerColor = getSpeakerColor(segment.speaker_tag || 'Speaker A');
+                                    
+                                    return (
+                                      <div key={index} className="border-l-4 pl-4 py-2" style={{ borderLeftColor: speakerColor }}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span 
+                                            className="text-sm font-medium px-2 py-1 rounded-full text-white"
+                                            style={{ backgroundColor: speakerColor }}
+                                          >
+                                            {segment.speaker_tag || 'Speaker A'}
+                                          </span>
+                                          <span className="text-xs text-gray-500">
+                                            {startTimeFormatted}
+                                          </span>
+                                          <span className="text-xs text-gray-400">
+                                            ({(segment.confidence * 100).toFixed(1)}% confiança)
+                                          </span>
+                                        </div>
+                                        <p className="text-gray-900 leading-relaxed">
+                                          {segment.text}
+                                        </p>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            selectedTranscription.full_text && (
+                              <div>
+                                <h3 className="font-medium text-lg mb-3">Transcrição Completa</h3>
+                                <div className="p-4 bg-white border rounded-lg max-h-96 overflow-y-auto">
+                                  <p className="text-gray-900 whitespace-pre-wrap leading-relaxed">
+                                    {selectedTranscription.full_text}
+                                  </p>
+                                </div>
+                              </div>
+                            )
+                          )}
+
+                          {/* Ata de Reunião */}
+                          {selectedTranscription.meeting_minutes && (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <span className="text-blue-600">📋</span>
+                                Ata de Reunião
+                              </h3>
+                              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div className="text-gray-900 whitespace-pre-wrap leading-relaxed">
+                                  {selectedTranscription.meeting_minutes}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Botão para gerar ata se ainda não foi gerada */}
+                          {selectedTranscription.status === 'completed' && !selectedTranscription.meeting_minutes && (
+                            <div className="text-center">
+                              <Button 
+                                onClick={() => handleGenerateMinutes(selectedTranscription.id)}
+                                disabled={minutesLoading}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                {minutesLoading ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Gerando Ata...
+                                  </>
+                                ) : (
+                                  <>
+                                    📋 Gerar Ata de Reunião
+                                  </>
+                                )}
+                              </Button>
+                              {minutesError && (
+                                <p className="text-red-600 text-sm mt-2">{minutesError}</p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Mensagem de erro (se houver) */}
+                          {selectedTranscription.error_message && (
+                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                              <h3 className="font-medium text-red-800 mb-2">Erro no Processamento</h3>
+                              <p className="text-red-700">{selectedTranscription.error_message}</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Modal de Detalhes da Transcrição */}
-      {selectedTranscription && (
-        <Card className="mt-6">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Detalhes da Transcrição: {selectedTranscription.file_name}
-                </CardTitle>
-                <CardDescription>
-                  ID: {selectedTranscription.id}
-                </CardDescription>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setSelectedTranscription(null)}
-              >
-                Fechar
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Informações básicas */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <span className="font-medium text-sm text-gray-600">Status:</span>
-                  <div className="mt-1">{getStatusBadge(selectedTranscription.status)}</div>
-                </div>
-                <div>
-                  <span className="font-medium text-sm text-gray-600">Duração:</span>
-                  <p className="mt-1">{formatDuration(selectedTranscription.duration_seconds || 0)}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-sm text-gray-600">Criado em:</span>
-                  <p className="mt-1">{formatDate(selectedTranscription.created_at)}</p>
-                </div>
-                {selectedTranscription.completed_at && (
-                  <div>
-                    <span className="font-medium text-sm text-gray-600">Concluído em:</span>
-                    <p className="mt-1">{formatDate(selectedTranscription.completed_at)}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Resumo Executivo */}
-              {selectedTranscription.summary && (
-                <div>
-                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Resumo Executivo
-                  </h3>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-gray-900 leading-relaxed">
-                      {selectedTranscription.summary}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Ações Definidas */}
-              {selectedTranscription.metadata?.action_items && selectedTranscription.metadata.action_items.length > 0 && (
-                <div>
-                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                    <span className="text-orange-600">📋</span>
-                    Ações Definidas
-                  </h3>
-                  <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                    <ul className="space-y-2">
-                      {selectedTranscription.metadata.action_items.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-orange-600 font-medium">{index + 1}.</span>
-                          <span className="text-gray-900">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {/* Decisões Tomadas */}
-              {selectedTranscription.metadata?.decisions && selectedTranscription.metadata.decisions.length > 0 && (
-                <div>
-                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                    <span className="text-green-600">✅</span>
-                    Decisões Tomadas
-                  </h3>
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <ul className="space-y-2">
-                      {selectedTranscription.metadata.decisions.map((decision, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-green-600 font-medium">{index + 1}.</span>
-                          <span className="text-gray-900">{decision}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {/* Pontos-Chave */}
-              {selectedTranscription.metadata?.key_points && selectedTranscription.metadata.key_points.length > 0 && (
-                <div>
-                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                    <span className="text-purple-600">💡</span>
-                    Pontos-Chave
-                  </h3>
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <ul className="space-y-2">
-                      {selectedTranscription.metadata.key_points.map((point, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-purple-600 font-medium">{index + 1}.</span>
-                          <span className="text-gray-900">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {/* Transcrição com Speaker Diarization */}
-              {selectedTranscription.metadata?.segments && selectedTranscription.metadata.segments.length > 0 ? (
-                <div>
-                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                    <span className="text-blue-600">🎤</span>
-                    Transcrição com Identificação de Falantes
-                  </h3>
-                  <div className="p-4 bg-white border rounded-lg max-h-96 overflow-y-auto">
-                    <div className="space-y-4">
-                      {selectedTranscription.metadata.segments.map((segment, index) => {
-                        const startTimeFormatted = formatTimestamp(segment.start_time);
-                        const speakerColor = getSpeakerColor(segment.speaker_tag || 'Speaker A');
-                        
-                        return (
-                          <div key={index} className="border-l-4 pl-4 py-2" style={{ borderLeftColor: speakerColor }}>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span 
-                                className="text-sm font-medium px-2 py-1 rounded-full text-white"
-                                style={{ backgroundColor: speakerColor }}
-                              >
-                                {segment.speaker_tag || 'Speaker A'}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {startTimeFormatted}
-                              </span>
-                              <span className="text-xs text-gray-400">
-                                ({(segment.confidence * 100).toFixed(1)}% confiança)
-                              </span>
-                            </div>
-                            <p className="text-gray-900 leading-relaxed">
-                              {segment.text}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                selectedTranscription.full_text && (
-                  <div>
-                    <h3 className="font-medium text-lg mb-3">Transcrição Completa</h3>
-                    <div className="p-4 bg-white border rounded-lg max-h-96 overflow-y-auto">
-                      <p className="text-gray-900 whitespace-pre-wrap leading-relaxed">
-                        {selectedTranscription.full_text}
-                      </p>
-                    </div>
-                  </div>
-                )
-              )}
-
-              {/* Ata de Reunião */}
-              {selectedTranscription.meeting_minutes && (
-                <div>
-                  <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
-                    <span className="text-blue-600">📋</span>
-                    Ata de Reunião
-                  </h3>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-gray-900 whitespace-pre-wrap leading-relaxed">
-                      {selectedTranscription.meeting_minutes}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Botão para gerar ata se ainda não foi gerada */}
-              {selectedTranscription.status === 'completed' && !selectedTranscription.meeting_minutes && (
-                <div className="text-center">
-                  <Button 
-                    onClick={() => handleGenerateMinutes(selectedTranscription.id)}
-                    disabled={minutesLoading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {minutesLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Gerando Ata...
-                      </>
-                    ) : (
-                      <>
-                        📋 Gerar Ata de Reunião
-                      </>
-                    )}
-                  </Button>
-                  {minutesError && (
-                    <p className="text-red-600 text-sm mt-2">{minutesError}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Mensagem de erro (se houver) */}
-              {selectedTranscription.error_message && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <h3 className="font-medium text-red-800 mb-2">Erro no Processamento</h3>
-                  <p className="text-red-700">{selectedTranscription.error_message}</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

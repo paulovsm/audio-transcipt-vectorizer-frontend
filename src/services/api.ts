@@ -32,7 +32,7 @@ export const apiService = {
   async uploadFile(
     file: File,
     options: {
-      meeting_title?: string;
+      meeting_id?: string;
       meeting_type?: string;
       participants?: string[];
       language_code?: string;
@@ -47,7 +47,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('file', file);
     
-    if (options.meeting_title) formData.append('meeting_title', options.meeting_title);
+    if (options.meeting_id) formData.append('meeting_id', options.meeting_id);
     if (options.meeting_type) formData.append('meeting_type', options.meeting_type);
     if (options.participants) formData.append('participants', JSON.stringify(options.participants));
     if (options.language_code) formData.append('language_code', options.language_code);
@@ -72,7 +72,7 @@ export const apiService = {
   async uploadTextFile(
     file: File,
     options: {
-      meeting_title?: string;
+      meeting_id?: string;
       meeting_type?: string;
       participants?: string[];
       language_code?: string;
@@ -87,7 +87,7 @@ export const apiService = {
     const formData = new FormData();
     formData.append('file', file);
     
-    if (options.meeting_title) formData.append('meeting_title', options.meeting_title);
+    if (options.meeting_id) formData.append('meeting_id', options.meeting_id);
     if (options.meeting_type) formData.append('meeting_type', options.meeting_type);
     if (options.participants) formData.append('participants', JSON.stringify(options.participants));
     if (options.language_code) formData.append('language_code', options.language_code);

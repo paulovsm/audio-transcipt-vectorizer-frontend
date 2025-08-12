@@ -29,7 +29,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     message: '',
     progress: 0,
   });
-  const [meetingTitle, setMeetingTitle] = useState('');
+  const [meetingId, setMeetingId] = useState('');
   const [meetingType, setMeetingType] = useState('');
   const [participants, setParticipants] = useState('');
   const [datasetName, setDatasetName] = useState('');
@@ -74,7 +74,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         .filter(p => p.length > 0);
 
       const response = await apiService.uploadFile(file, {
-        meeting_title: meetingTitle || undefined,
+        meeting_id: meetingId || undefined,
         meeting_type: meetingType || undefined,
         participants: participantsList.length > 0 ? participantsList : undefined,
         language_code: languageCode,
@@ -97,7 +97,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       // Reset form after successful upload
       setTimeout(() => {
         setFiles([]);
-        setMeetingTitle('');
+        setMeetingId('');
         setMeetingType('');
         setParticipants('');
         setDatasetName('');
@@ -203,11 +203,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         {/* Form fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Título da Reunião</label>
+            <label className="text-sm font-medium">Identificador da Reunião</label>
             <Input
               placeholder="Ex: Reunião de Planning Sprint 5"
-              value={meetingTitle}
-              onChange={(e) => setMeetingTitle(e.target.value)}
+              value={meetingId}
+              onChange={(e) => setMeetingId(e.target.value)}
             />
           </div>
           
