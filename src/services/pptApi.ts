@@ -8,7 +8,18 @@ const pptApi = axios.create({ baseURL: PPT_API_BASE_URL, timeout: 30000 });
 pptApi.interceptors.response.use(r => r, e => { console.error('PPT API Error:', e); throw e; });
 
 export const pptService = {
-  async uploadPresentation(file: File, options: { presentation_title?: string; presentation_type?: string; author?: string; language_code?: string; detailed_analysis?: boolean; dataset_name?: string; } = {}): Promise<PPTUploadResponse> {
+  async uploadPresentation(file: File, options: { 
+    presentation_title?: string; 
+    presentation_type?: string; 
+    author?: string; 
+    language_code?: string; 
+    detailed_analysis?: boolean; 
+    dataset_name?: string;
+    // Novos campos
+    workstream?: string;
+    bpml_l1?: string;
+    bpml_l2?: string;
+  } = {}): Promise<PPTUploadResponse> {
     const form = new FormData();
     form.append('file', file);
     if (options.presentation_title) form.append('presentation_title', options.presentation_title);
@@ -17,6 +28,10 @@ export const pptService = {
     form.append('language_code', options.language_code || 'pt-BR');
     form.append('detailed_analysis', String(options.detailed_analysis ?? true));
     if (options.dataset_name) form.append('dataset_name', options.dataset_name);
+    // Novos campos
+    if (options.workstream) form.append('workstream', options.workstream);
+    if (options.bpml_l1) form.append('bpml_l1', options.bpml_l1);
+    if (options.bpml_l2) form.append('bpml_l2', options.bpml_l2);
     const resp = await pptApi.post('/upload', form, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 180000 });
     return resp.data;
   },

@@ -38,6 +38,10 @@ export const apiService = {
       language_code?: string;
       enhance_transcription?: boolean;
       dataset_name?: string;
+      // Novos campos
+      workstream?: string;
+      bpml_l1?: string;
+      bpml_l2?: string;
     } = {}
   ): Promise<UploadResponse> {
     const formData = new FormData();
@@ -49,8 +53,52 @@ export const apiService = {
     if (options.language_code) formData.append('language_code', options.language_code);
     if (options.enhance_transcription !== undefined) formData.append('enhance_transcription', String(options.enhance_transcription));
     if (options.dataset_name) formData.append('dataset_name', options.dataset_name);
+    // Novos campos
+    if (options.workstream) formData.append('workstream', options.workstream);
+    if (options.bpml_l1) formData.append('bpml_l1', options.bpml_l1);
+    if (options.bpml_l2) formData.append('bpml_l2', options.bpml_l2);
 
     const response = await api.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 120000, // 2 minutos para upload
+    });
+    
+    return response.data;
+  },
+
+  // Upload de arquivo de texto
+  async uploadTextFile(
+    file: File,
+    options: {
+      meeting_title?: string;
+      meeting_type?: string;
+      participants?: string[];
+      language_code?: string;
+      enhance_transcription?: boolean;
+      dataset_name?: string;
+      // Novos campos
+      workstream?: string;
+      bpml_l1?: string;
+      bpml_l2?: string;
+    } = {}
+  ): Promise<UploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    if (options.meeting_title) formData.append('meeting_title', options.meeting_title);
+    if (options.meeting_type) formData.append('meeting_type', options.meeting_type);
+    if (options.participants) formData.append('participants', JSON.stringify(options.participants));
+    if (options.language_code) formData.append('language_code', options.language_code);
+    if (options.enhance_transcription !== undefined) formData.append('enhance_transcription', String(options.enhance_transcription));
+    if (options.dataset_name) formData.append('dataset_name', options.dataset_name);
+    // Novos campos
+    if (options.workstream) formData.append('workstream', options.workstream);
+    if (options.bpml_l1) formData.append('bpml_l1', options.bpml_l1);
+    if (options.bpml_l2) formData.append('bpml_l2', options.bpml_l2);
+
+    const response = await api.post('/upload-text', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

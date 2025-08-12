@@ -23,6 +23,10 @@ const PPTUploadTab: React.FC = () => {
   const [dataset,setDataset]=useState('');
   const [languageCode,setLanguageCode]=useState('pt-BR');
   const [detailedAnalysis,setDetailedAnalysis]=useState(true);
+  // Novos estados
+  const [workstream,setWorkstream]=useState('');
+  const [bpmlL1,setBpmlL1]=useState('');
+  const [bpmlL2,setBpmlL2]=useState('');
   const [state,setState]=useState<UploadState>({status:'idle',message:''});
 
   const onDrop = useCallback((accepted:File[])=>{ if(accepted && accepted[0]) { setFiles([accepted[0]]); setState({status:'idle',message:''}); } },[]);
@@ -35,9 +39,9 @@ const PPTUploadTab: React.FC = () => {
   const handleUpload = async ()=>{
     if(files.length===0) return; const file=files[0]; setState({status:'uploading',message:'Enviando arquivo...'});
     try {
-      const resp = await pptService.uploadPresentation(file,{ presentation_title: title||undefined, presentation_type: ptype||undefined, author: author||undefined, dataset_name: dataset||undefined, language_code: languageCode, detailed_analysis: detailedAnalysis });
+      const resp = await pptService.uploadPresentation(file,{ presentation_title: title||undefined, presentation_type: ptype||undefined, author: author||undefined, dataset_name: dataset||undefined, language_code: languageCode, detailed_analysis: detailedAnalysis, workstream: workstream||undefined, bpml_l1: bpmlL1||undefined, bpml_l2: bpmlL2||undefined });
       setState({status:'success',message:`Upload iniciado. ID: ${resp.file_id}`});
-      setTimeout(()=>{ setFiles([]); setTitle(''); setPtype(''); setAuthor(''); setDataset(''); setDetailedAnalysis(true); setLanguageCode('pt-BR'); setState({status:'idle',message:''}); },2500);
+      setTimeout(()=>{ setFiles([]); setTitle(''); setPtype(''); setAuthor(''); setDataset(''); setWorkstream(''); setBpmlL1(''); setBpmlL2(''); setDetailedAnalysis(true); setLanguageCode('pt-BR'); setState({status:'idle',message:''}); },2500);
     } catch (e) {
       console.error(e); setState({status:'error',message:'Erro no upload. Tente novamente.'});
     }
@@ -88,6 +92,9 @@ const PPTUploadTab: React.FC = () => {
           <div className="space-y-2"><label className="text-sm font-medium">Título</label><Input placeholder="Título da apresentação" value={title} onChange={e=>setTitle(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Tipo</label><Input placeholder="Ex: comercial, técnico" value={ptype} onChange={e=>setPtype(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Autor</label><Input placeholder="Nome do autor" value={author} onChange={e=>setAuthor(e.target.value)} /></div>
+          <div className="space-y-2"><label className="text-sm font-medium">Workstream</label><Input placeholder="Ex: Technology, Product, Operations" value={workstream} onChange={e=>setWorkstream(e.target.value)} /></div>
+          <div className="space-y-2"><label className="text-sm font-medium">BPML L1</label><Input placeholder="Ex: Core Banking, Customer Onboarding" value={bpmlL1} onChange={e=>setBpmlL1(e.target.value)} /></div>
+          <div className="space-y-2"><label className="text-sm font-medium">BPML L2</label><Input placeholder="Ex: Account Opening, KYC Process" value={bpmlL2} onChange={e=>setBpmlL2(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Dataset Dify (opcional)</label><Input placeholder="Nome do dataset" value={dataset} onChange={e=>setDataset(e.target.value)} /></div>
           <div className="space-y-2"><label className="text-sm font-medium">Idioma</label><select value={languageCode} onChange={e=>setLanguageCode(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="pt-BR">Português (Brasil)</option><option value="en-US">English (US)</option><option value="es-ES">Español</option></select></div>
           <div className="space-y-2 flex items-end"><label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={detailedAnalysis} onChange={e=>setDetailedAnalysis(e.target.checked)} className="rounded border-gray-300" />Análise detalhada</label></div>

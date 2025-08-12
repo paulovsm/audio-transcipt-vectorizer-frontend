@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileUpload } from '@/components/FileUpload';
+import { TextUpload } from '@/components/TextUpload';
 import { DatasetSelector } from '@/components/DatasetSelector';
 import { apiService } from '@/services/api';
 import { SearchResponse, TranscriptionResponse, Statistics, Dataset } from '@/types/api';
@@ -15,7 +16,8 @@ interface TabsProps {
 
 const Tabs: React.FC<TabsProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
-    { id: 'upload', label: 'Upload', icon: Mic },
+    { id: 'upload-audio', label: 'Upload Áudio/Vídeo', icon: Mic },
+    { id: 'upload-text', label: 'Upload Texto', icon: FileText },
     { id: 'search', label: 'Buscar', icon: Search },
     { id: 'transcriptions', label: 'Transcrições', icon: FileText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -832,12 +834,14 @@ const TranscriptionsTab: React.FC = () => {
 
 interface MainDashboardProps { embedMode?: boolean }
 export const MainDashboard: React.FC<MainDashboardProps> = ({ embedMode = false }) => {
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('upload-audio');
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'upload':
+      case 'upload-audio':
         return <FileUpload />;
+      case 'upload-text':
+        return <TextUpload />;
       case 'search':
         return <SearchTab />;
       case 'transcriptions':

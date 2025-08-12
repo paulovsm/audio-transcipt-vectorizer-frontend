@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileAudio, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, X, CheckCircle, AlertCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import { apiService } from '@/services/api';
 
-interface FileUploadProps {
+interface TextUploadProps {
   onUploadComplete?: (fileId: string) => void;
   onUploadStart?: () => void;
 }
@@ -19,7 +19,7 @@ interface UploadState {
   progress: number;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({
+export const TextUpload: React.FC<TextUploadProps> = ({
   onUploadComplete,
   onUploadStart,
 }) => {
@@ -48,11 +48,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'audio/*': ['.mp3', '.wav', '.m4a', '.flac', '.ogg'],
-      'video/*': ['.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv']
+      'text/plain': ['.txt'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/pdf': ['.pdf']
     },
     multiple: false,
-    maxSize: 100 * 1024 * 1024, // 100MB
+    maxSize: 50 * 1024 * 1024, // 50MB para texto
   });
 
   const removeFile = () => {
@@ -64,7 +66,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     if (files.length === 0) return;
 
     const file = files[0];
-    setUploadState({ status: 'uploading', message: 'Enviando arquivo...', progress: 0 });
+    setUploadState({ status: 'uploading', message: 'Enviando arquivo de texto...', progress: 0 });
     onUploadStart?.();
 
     try {
@@ -73,7 +75,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         .map(p => p.trim())
         .filter(p => p.length > 0);
 
-      const response = await apiService.uploadFile(file, {
+      const response = await apiService.uploadTextFile(file, {
         meeting_title: meetingTitle || undefined,
         meeting_type: meetingType || undefined,
         participants: participantsList.length > 0 ? participantsList : undefined,
@@ -88,7 +90,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
       setUploadState({
         status: 'success',
-        message: 'Arquivo enviado com sucesso! Processamento iniciado.',
+        message: 'Arquivo de texto enviado com sucesso! Processamento iniciado.',
         progress: 100,
       });
 
@@ -111,7 +113,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       console.error('Upload error:', error);
       setUploadState({
         status: 'error',
-        message: 'Erro no upload. Tente novamente.',
+        message: 'Erro no upload de texto. Tente novamente.',
         progress: 0,
       });
     }
@@ -129,12 +131,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Upload className="h-5 w-5" />
-          Upload de Arquivo de Áudio ou Vídeo
+          <FileText className="h-5 w-5" />
+          Upload de Transcrição Existente
         </CardTitle>
         <CardDescription>
-          Envie arquivos de áudio ou vídeo para transcrição automática. 
-          Formatos aceitos: Áudio (MP3, WAV, M4A, FLAC, OGG) | Vídeo (MP4, AVI, MOV, MKV, WEBM, FLV).
+          Envie arquivos de texto com transcrições já prontas para análise e processamento. 
+          Formatos aceitos: TXT, DOC, DOCX, PDF.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -146,29 +148,29 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             isDragActive
               ? "border-primary bg-primary/10"
               : "border-gray-300 hover:border-primary hover:bg-gray-50",
-            files.length > 0 && "border-green-300 bg-green-50"
+            files.length > 0 && "border-blue-300 bg-blue-50"
           )}
         >
           <input {...getInputProps()} />
           {files.length === 0 ? (
             <div className="space-y-2">
-              <Upload className="h-12 w-12 mx-auto text-gray-400" />
+              <FileText className="h-12 w-12 mx-auto text-gray-400" />
               <div>
                 <p className="text-lg font-medium">
                   {isDragActive
-                    ? "Solte o arquivo aqui..."
-                    : "Clique ou arraste um arquivo de áudio ou vídeo"}
+                    ? "Solte o arquivo de texto aqui..."
+                    : "Clique ou arraste um arquivo de texto"}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Máximo 100MB • Áudio: MP3, WAV, M4A, FLAC, OGG | Vídeo: MP4, AVI, MOV, MKV, WEBM, FLV
+                  Máximo 50MB • Formatos: TXT, DOC, DOCX, PDF
                 </p>
               </div>
             </div>
           ) : (
             <div className="space-y-2">
-              <FileAudio className="h-12 w-12 mx-auto text-green-500" />
+              <FileText className="h-12 w-12 mx-auto text-blue-500" />
               <div>
-                <p className="text-lg font-medium text-green-700">
+                <p className="text-lg font-medium text-blue-700">
                   {files[0].name}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -183,7 +185,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         {files.length > 0 && (
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
-              <FileAudio className="h-5 w-5 text-blue-500" />
+              <FileText className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="font-medium">{files[0].name}</p>
                 <p className="text-sm text-gray-500">{formatFileSize(files[0].size)}</p>
@@ -283,13 +285,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <div className="flex items-center space-x-2">
           <input
             type="checkbox"
-            id="enhance"
+            id="enhance-text"
             checked={enhanceTranscription}
             onChange={(e) => setEnhanceTranscription(e.target.checked)}
             className="rounded border-gray-300"
           />
-          <label htmlFor="enhance" className="text-sm font-medium">
-            Aprimorar transcrição com IA
+          <label htmlFor="enhance-text" className="text-sm font-medium">
+            Aprimorar análise com IA
           </label>
         </div>
 
@@ -336,12 +338,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           {uploadState.status === 'uploading' ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Enviando...
+              Processando...
             </>
           ) : (
             <>
               <Upload className="h-4 w-4 mr-2" />
-              Enviar e Processar
+              Processar Transcrição
             </>
           )}
         </Button>
