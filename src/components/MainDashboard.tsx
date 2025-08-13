@@ -571,6 +571,43 @@ const TranscriptionsTab: React.FC = () => {
                           </p>
                         </div>
                       )}
+
+                      {/* Tags de contexto do projeto */}
+                      {(transcription.metadata?.project || 
+                        transcription.metadata?.workstream || 
+                        (transcription.metadata?.bpml_l1 && transcription.metadata.bpml_l1.length > 0) || 
+                        (transcription.metadata?.bpml_l2 && transcription.metadata.bpml_l2.length > 0)) && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {transcription.metadata?.project && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                              📊 {transcription.metadata.project}
+                            </span>
+                          )}
+                          {transcription.metadata?.workstream && (
+                            <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
+                              🔄 {transcription.metadata.workstream}
+                            </span>
+                          )}
+                          {transcription.metadata?.bpml_l1 && transcription.metadata.bpml_l1.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {transcription.metadata.bpml_l1.map((item, index) => (
+                                <span key={`l1-${index}`} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                                  L1: {item}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {transcription.metadata?.bpml_l2 && transcription.metadata.bpml_l2.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {transcription.metadata.bpml_l2.map((item, index) => (
+                                <span key={`l2-${index}`} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium">
+                                  L2: {item}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                       
                       <div className="flex justify-end mt-3 gap-2">
                         <Button 
@@ -663,7 +700,106 @@ const TranscriptionsTab: React.FC = () => {
                                 <p className="mt-1">{formatDate(selectedTranscription.completed_at)}</p>
                               </div>
                             )}
+                            {selectedTranscription.metadata?.project && (
+                              <div>
+                                <span className="font-medium text-sm text-gray-600">Projeto:</span>
+                                <p className="mt-1 font-medium text-blue-700">{selectedTranscription.metadata.project}</p>
+                              </div>
+                            )}
+                            {selectedTranscription.metadata?.workstream && (
+                              <div>
+                                <span className="font-medium text-sm text-gray-600">Workstream:</span>
+                                <p className="mt-1 font-medium text-purple-700">{selectedTranscription.metadata.workstream}</p>
+                              </div>
+                            )}
+                            {selectedTranscription.metadata?.bpml_l1 && selectedTranscription.metadata.bpml_l1.length > 0 && (
+                              <div>
+                                <span className="font-medium text-sm text-gray-600">BPML L1:</span>
+                                <p className="mt-1 font-medium text-green-700">
+                                  {selectedTranscription.metadata.bpml_l1.length === 1 
+                                    ? selectedTranscription.metadata.bpml_l1[0]
+                                    : `${selectedTranscription.metadata.bpml_l1.length} categorias`
+                                  }
+                                </p>
+                              </div>
+                            )}
+                            {selectedTranscription.metadata?.bpml_l2 && selectedTranscription.metadata.bpml_l2.length > 0 && (
+                              <div>
+                                <span className="font-medium text-sm text-gray-600">BPML L2:</span>
+                                <p className="mt-1 font-medium text-orange-700">
+                                  {selectedTranscription.metadata.bpml_l2.length === 1 
+                                    ? selectedTranscription.metadata.bpml_l2[0]
+                                    : `${selectedTranscription.metadata.bpml_l2.length} subcategorias`
+                                  }
+                                </p>
+                              </div>
+                            )}
                           </div>
+
+                          {/* Informações do Projeto e Contexto */}
+                          {(selectedTranscription.metadata?.project || 
+                            selectedTranscription.metadata?.workstream || 
+                            selectedTranscription.metadata?.bpml_l1 || 
+                            selectedTranscription.metadata?.bpml_l2 ||
+                            selectedTranscription.metadata?.meeting_type ||
+                            selectedTranscription.metadata?.meeting_id) && (
+                            <div>
+                              <h3 className="font-medium text-lg mb-3 flex items-center gap-2">
+                                <span className="text-gray-600">🏢</span>
+                                Informações do Projeto e Contexto
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                                {selectedTranscription.metadata?.project && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-blue-600 font-medium text-sm">Projeto:</span>
+                                    <span className="text-gray-900 font-medium">{selectedTranscription.metadata.project}</span>
+                                  </div>
+                                )}
+                                {selectedTranscription.metadata?.workstream && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-purple-600 font-medium text-sm">Workstream:</span>
+                                    <span className="text-gray-900 font-medium">{selectedTranscription.metadata.workstream}</span>
+                                  </div>
+                                )}
+                                {selectedTranscription.metadata?.bpml_l1 && selectedTranscription.metadata.bpml_l1.length > 0 && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-green-600 font-medium text-sm">BPML L1:</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {selectedTranscription.metadata.bpml_l1.map((item, index) => (
+                                        <span key={index} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
+                                          {item}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {selectedTranscription.metadata?.bpml_l2 && selectedTranscription.metadata.bpml_l2.length > 0 && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-orange-600 font-medium text-sm">BPML L2:</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {selectedTranscription.metadata.bpml_l2.map((item, index) => (
+                                        <span key={index} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium">
+                                          {item}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {selectedTranscription.metadata?.meeting_type && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-indigo-600 font-medium text-sm">Tipo de Reunião:</span>
+                                    <span className="text-gray-900 font-medium">{selectedTranscription.metadata.meeting_type}</span>
+                                  </div>
+                                )}
+                                {selectedTranscription.metadata?.meeting_id && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-teal-600 font-medium text-sm">ID da Reunião:</span>
+                                    <span className="text-gray-900 font-medium">{selectedTranscription.metadata.meeting_id}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Resumo Executivo */}
                           {selectedTranscription.summary && (

@@ -6,6 +6,12 @@ export interface TranscriptionRequest {
   meeting_type?: string;
   language_code: string;
   enhance_transcription: boolean;
+  dataset_name?: string;
+  // Novos campos adicionados
+  project?: string;
+  workstream?: string;
+  bpml_l1?: string;
+  bpml_l2?: string;
 }
 
 export interface TranscriptionSegment {
@@ -100,6 +106,11 @@ export interface MeetingMetadata {
   urgency_level?: string;
   follow_up_required?: boolean;
   segments?: TranscriptionSegment[];
+  // Novos campos adicionados
+  project?: string;
+  workstream?: string;
+  bpml_l1?: string[]; // Lista de strings (backend converte de string para array)
+  bpml_l2?: string[]; // Lista de strings (backend converte de string para array)
 }
 
 export interface ProcessedTranscription {

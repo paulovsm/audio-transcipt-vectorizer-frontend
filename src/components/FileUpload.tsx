@@ -235,7 +235,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">BPML L1</label>
             <Input
-              placeholder="Ex: Core Banking, Customer Onboarding"
+              placeholder="Ex: Core Banking, Customer Onboarding (separar múltiplos por vírgula)"
               value={bpmlL1}
               onChange={(e) => setBpmlL1(e.target.value)}
             />
@@ -244,7 +244,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">BPML L2</label>
             <Input
-              placeholder="Ex: Account Opening, KYC Process"
+              placeholder="Ex: Account Opening, KYC Process (separar múltiplos por vírgula)"
               value={bpmlL2}
               onChange={(e) => setBpmlL2(e.target.value)}
             />
