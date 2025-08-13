@@ -42,6 +42,7 @@ export const apiService = {
       workstream?: string;
       bpml_l1?: string;
       bpml_l2?: string;
+      project?: string;
     } = {}
   ): Promise<UploadResponse> {
     const formData = new FormData();
@@ -57,6 +58,7 @@ export const apiService = {
     if (options.workstream) formData.append('workstream', options.workstream);
     if (options.bpml_l1) formData.append('bpml_l1', options.bpml_l1);
     if (options.bpml_l2) formData.append('bpml_l2', options.bpml_l2);
+    if (options.project) formData.append('project', options.project);
 
     const response = await api.post('/upload', formData, {
       headers: {
@@ -82,6 +84,7 @@ export const apiService = {
       workstream?: string;
       bpml_l1?: string;
       bpml_l2?: string;
+      project?: string;
     } = {}
   ): Promise<UploadResponse> {
     const formData = new FormData();
@@ -97,6 +100,7 @@ export const apiService = {
     if (options.workstream) formData.append('workstream', options.workstream);
     if (options.bpml_l1) formData.append('bpml_l1', options.bpml_l1);
     if (options.bpml_l2) formData.append('bpml_l2', options.bpml_l2);
+    if (options.project) formData.append('project', options.project);
 
     const response = await api.post('/upload-text', formData, {
       headers: {

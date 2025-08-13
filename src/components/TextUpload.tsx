@@ -39,6 +39,7 @@ export const TextUpload: React.FC<TextUploadProps> = ({
   const [workstream, setWorkstream] = useState('');
   const [bpmlL1, setBpmlL1] = useState('');
   const [bpmlL2, setBpmlL2] = useState('');
+  const [project, setProject] = useState('');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
@@ -86,6 +87,7 @@ export const TextUpload: React.FC<TextUploadProps> = ({
         workstream: workstream || undefined,
         bpml_l1: bpmlL1 || undefined,
         bpml_l2: bpmlL2 || undefined,
+        project: project || undefined,
       });
 
       setUploadState({
@@ -106,6 +108,7 @@ export const TextUpload: React.FC<TextUploadProps> = ({
         setWorkstream('');
         setBpmlL1('');
         setBpmlL2('');
+        setProject('');
         setUploadState({ status: 'idle', message: '', progress: 0 });
       }, 2000);
 
@@ -246,6 +249,15 @@ export const TextUpload: React.FC<TextUploadProps> = ({
               placeholder="Ex: Account Opening, KYC Process"
               value={bpmlL2}
               onChange={(e) => setBpmlL2(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Projeto</label>
+            <Input
+              placeholder="Ex: Digital Banking, Mobile App Redesign"
+              value={project}
+              onChange={(e) => setProject(e.target.value)}
             />
           </div>
           
