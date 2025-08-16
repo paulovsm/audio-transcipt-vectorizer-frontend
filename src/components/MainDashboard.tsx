@@ -9,6 +9,20 @@ import { DatasetSelector } from '@/components/DatasetSelector';
 import { apiService } from '@/services/api';
 import { SearchResponse, TranscriptionResponse, Statistics, Dataset } from '@/types/api';
 
+// Função auxiliar para normalizar arrays BPML
+const normalizeBpmlArray = (value: any): string[] | null => {
+  if (!value) return null;
+  if (Array.isArray(value)) return value.map(item => typeof item === 'string' ? item : String(item));
+  if (typeof value === 'string') return [value];
+  return null;
+};
+
+// Função auxiliar para verificar se um array BPML é válido
+const isValidBpmlArray = (value: any): boolean => {
+  const normalized = normalizeBpmlArray(value);
+  return normalized !== null && normalized.length > 0;
+};
+
 interface TabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -575,8 +589,8 @@ const TranscriptionsTab: React.FC = () => {
                       {/* Tags de contexto do projeto */}
                       {(transcription.metadata?.project || 
                         transcription.metadata?.workstream || 
-                        (transcription.metadata?.bpml_l1 && transcription.metadata.bpml_l1.length > 0) || 
-                        (transcription.metadata?.bpml_l2 && transcription.metadata.bpml_l2.length > 0)) && (
+                        isValidBpmlArray(transcription.metadata?.bpml_l1) || 
+                        isValidBpmlArray(transcription.metadata?.bpml_l2)) && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {transcription.metadata?.project && (
                             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
@@ -588,18 +602,18 @@ const TranscriptionsTab: React.FC = () => {
                               🔄 {transcription.metadata.workstream}
                             </span>
                           )}
-                          {transcription.metadata?.bpml_l1 && transcription.metadata.bpml_l1.length > 0 && (
+                          {isValidBpmlArray(transcription.metadata?.bpml_l1) && (
                             <div className="flex flex-wrap gap-1">
-                              {transcription.metadata.bpml_l1.map((item, index) => (
+                              {normalizeBpmlArray(transcription.metadata?.bpml_l1)!.map((item, index) => (
                                 <span key={`l1-${index}`} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
                                   L1: {item}
                                 </span>
                               ))}
                             </div>
                           )}
-                          {transcription.metadata?.bpml_l2 && transcription.metadata.bpml_l2.length > 0 && (
+                          {isValidBpmlArray(transcription.metadata?.bpml_l2) && (
                             <div className="flex flex-wrap gap-1">
-                              {transcription.metadata.bpml_l2.map((item, index) => (
+                              {normalizeBpmlArray(transcription.metadata?.bpml_l2)!.map((item, index) => (
                                 <span key={`l2-${index}`} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium">
                                   L2: {item}
                                 </span>
@@ -712,25 +726,25 @@ const TranscriptionsTab: React.FC = () => {
                                 <p className="mt-1 font-medium text-purple-700">{selectedTranscription.metadata.workstream}</p>
                               </div>
                             )}
-                            {selectedTranscription.metadata?.bpml_l1 && selectedTranscription.metadata.bpml_l1.length > 0 && (
+                            {isValidBpmlArray(selectedTranscription.metadata?.bpml_l1) && (
                               <div>
                                 <span className="font-medium text-sm text-gray-600">BPML L1:</span>
                                 <p className="mt-1 font-medium text-green-700">
-                                  {selectedTranscription.metadata.bpml_l1.length === 1 
-                                    ? selectedTranscription.metadata.bpml_l1[0]
-                                    : `${selectedTranscription.metadata.bpml_l1.length} categorias`
-                                  }
+                                  {(() => {
+                                    const bpml_l1 = normalizeBpmlArray(selectedTranscription.metadata?.bpml_l1)!;
+                                    return bpml_l1.length === 1 ? bpml_l1[0] : `${bpml_l1.length} categorias`;
+                                  })()}
                                 </p>
                               </div>
                             )}
-                            {selectedTranscription.metadata?.bpml_l2 && selectedTranscription.metadata.bpml_l2.length > 0 && (
+                            {isValidBpmlArray(selectedTranscription.metadata?.bpml_l2) && (
                               <div>
                                 <span className="font-medium text-sm text-gray-600">BPML L2:</span>
                                 <p className="mt-1 font-medium text-orange-700">
-                                  {selectedTranscription.metadata.bpml_l2.length === 1 
-                                    ? selectedTranscription.metadata.bpml_l2[0]
-                                    : `${selectedTranscription.metadata.bpml_l2.length} subcategorias`
-                                  }
+                                  {(() => {
+                                    const bpml_l2 = normalizeBpmlArray(selectedTranscription.metadata?.bpml_l2)!;
+                                    return bpml_l2.length === 1 ? bpml_l2[0] : `${bpml_l2.length} subcategorias`;
+                                  })()}
                                 </p>
                               </div>
                             )}
@@ -739,8 +753,8 @@ const TranscriptionsTab: React.FC = () => {
                           {/* Informações do Projeto e Contexto */}
                           {(selectedTranscription.metadata?.project || 
                             selectedTranscription.metadata?.workstream || 
-                            selectedTranscription.metadata?.bpml_l1 || 
-                            selectedTranscription.metadata?.bpml_l2 ||
+                            isValidBpmlArray(selectedTranscription.metadata?.bpml_l1) || 
+                            isValidBpmlArray(selectedTranscription.metadata?.bpml_l2) ||
                             selectedTranscription.metadata?.meeting_type ||
                             selectedTranscription.metadata?.meeting_id) && (
                             <div>
@@ -761,11 +775,11 @@ const TranscriptionsTab: React.FC = () => {
                                     <span className="text-gray-900 font-medium">{selectedTranscription.metadata.workstream}</span>
                                   </div>
                                 )}
-                                {selectedTranscription.metadata?.bpml_l1 && selectedTranscription.metadata.bpml_l1.length > 0 && (
+                                {isValidBpmlArray(selectedTranscription.metadata?.bpml_l1) && (
                                   <div className="flex items-start gap-2">
                                     <span className="text-green-600 font-medium text-sm">BPML L1:</span>
                                     <div className="flex flex-wrap gap-1">
-                                      {selectedTranscription.metadata.bpml_l1.map((item, index) => (
+                                      {normalizeBpmlArray(selectedTranscription.metadata?.bpml_l1)!.map((item, index) => (
                                         <span key={index} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
                                           {item}
                                         </span>
@@ -773,11 +787,11 @@ const TranscriptionsTab: React.FC = () => {
                                     </div>
                                   </div>
                                 )}
-                                {selectedTranscription.metadata?.bpml_l2 && selectedTranscription.metadata.bpml_l2.length > 0 && (
+                                {isValidBpmlArray(selectedTranscription.metadata?.bpml_l2) && (
                                   <div className="flex items-start gap-2">
                                     <span className="text-orange-600 font-medium text-sm">BPML L2:</span>
                                     <div className="flex flex-wrap gap-1">
-                                      {selectedTranscription.metadata.bpml_l2.map((item, index) => (
+                                      {normalizeBpmlArray(selectedTranscription.metadata?.bpml_l2)!.map((item, index) => (
                                         <span key={index} className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full font-medium">
                                           {item}
                                         </span>
